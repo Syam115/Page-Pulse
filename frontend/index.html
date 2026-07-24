@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Page Pulse</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Page Pulse</h1>
+
+    <form id="reportForm" class="form">
+      <label>Page URL
+        <input id="query" type="url" placeholder="https://example.com" required />
+      </label>
+
+      <div class="actions">
+        <button id="submitBtn" type="submit">Fetch Report</button>
+        <button id="clearBtn" type="button">Clear</button>
+      </div>
+    </form>
+
+    <section id="status" class="status">Idle</section>
+
+    <section id="report" class="report" aria-live="polite">
+      <!-- Report will render here -->
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <small>
+        Built for <a href="https://digitalheroesco.com" target="_blank" rel="noopener">Digital Heroes</a>
+        — Training Task · Live: <a id="liveUrl" href="#" target="_blank" rel="noopener">Not deployed</a>
+      </small>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

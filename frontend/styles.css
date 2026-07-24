@@ -1,0 +1,124 @@
+:root {
+    --bg: #f6f8fa;
+    --card: #fff;
+    --muted: #6b7280;
+    --accent: #0366d6;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: #0f172a;
+  }
+  
+  .container {
+    max-width: 880px;
+    margin: 28px auto;
+    padding: 20px;
+  }
+  
+  h1 {
+    margin: 0 0 16px;
+    font-size: 1.4rem;
+  }
+  
+  .form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+  }
+  
+  .form input[type="text"] {
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  
+  button {
+    background: var(--accent);
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  button#clearBtn {
+    background: #e5e7eb;
+    color: #111;
+  }
+  
+  .status {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  
+  .report {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  }
+  
+  .card {
+    border-left: 4px solid var(--accent);
+    padding: 10px 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #ffffff, #fbfdff);
+  }
+  
+  .kv {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .k {
+    font-weight: 600;
+    color: var(--muted);
+    width: 160px;
+  }
+  
+  .v {
+    flex: 1;
+  }
+  
+  pre.json {
+    background: #0b1220;
+    color: #d7eaff;
+    padding: 12px;
+    border-radius: 6px;
+    overflow: auto;
+  }
+  
+  @media (max-width: 520px) {
+    .k {
+      width: 110px;
+    }
+  }
+
+  .site-footer{margin-top:18px;padding:12px 20px;text-align:center;color:var(--muted);font-size:0.85rem}
+  .site-footer a{color:var(--accent);text-decoration:underline}
+  .footer-content small{display:inline-block}
+  
