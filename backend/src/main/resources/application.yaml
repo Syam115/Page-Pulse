@@ -1,3 +1,6 @@
 spring:
   application:
     name: Page-Pulse
+
+server:
+  port: ${PORT:8080}
