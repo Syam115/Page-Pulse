@@ -1,10 +1,11 @@
-# Simple Dockerfile — expects backend JAR to be built in target/
+# Simple Dockerfile that builds and runs the backend inside the image
+FROM maven:3.9.5-eclipse-temurin-21 AS builder
+WORKDIR /app
+COPY . .
+RUN mvn -B -DskipTests package
+
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-
-# copy built jar (use wildcard to avoid hardcoding name)
-COPY target/*.jar app.jar
-
+COPY --from=builder /app/target/*.jar ./app.jar
 EXPOSE 8080
-
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+CMD ["sh","-c","java -jar app.jar"]
