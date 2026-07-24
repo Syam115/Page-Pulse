@@ -1,0 +1,44 @@
+# Root .gitignore for page-pulse
+
+# Java / Maven
+**/target/
+**/build/
+**/*.class
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+*.iml
+*.iws
+.vscode/
+*.class
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# Frontend runtime config (local only)
+/frontend/config.json
+/frontend/.env
+
+# Env files
+.env
+.env.*
+
+# Misc
+*.swp
+*~
+
+# Keep README and other docs
+!README.md

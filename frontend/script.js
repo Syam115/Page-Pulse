@@ -4,12 +4,34 @@ const statusEl = document.getElementById('status');
 const reportEl = document.getElementById('report');
 const clearBtn = document.getElementById('clearBtn');
 
-// Fixed backend endpoint (no UI field). When served via file://, use localhost backend for convenience.
+// Fixed backend endpoint (no UI field). Load runtime config from ./config.json with fallback to example and localhost.
 const DEFAULT_ENDPOINT = '/api/audit';
 let resolvedEndpoint = DEFAULT_ENDPOINT;
-if (location.protocol === 'file:') {
-  resolvedEndpoint = 'http://localhost:8080/api/audit';
+
+async function loadConfig(){
+  // try runtime config first (frontend/config.json - should be created in deployment if needed)
+  try{
+    const r = await fetch('config.json', {cache: 'no-store'});
+    if (r.ok){
+      const cfg = await r.json();
+      if (cfg && cfg.backendUrl) { resolvedEndpoint = cfg.backendUrl; return; }
+    }
+  }catch(e){ /* ignore */ }
+
+  // fallback to shipped example
+  try{
+    const r2 = await fetch('config.example.json', {cache: 'no-store'});
+    if (r2.ok){
+      const cfg2 = await r2.json();
+      if (cfg2 && cfg2.backendUrl) { resolvedEndpoint = cfg2.backendUrl; return; }
+    }
+  }catch(e){ /* ignore */ }
+
+  // final fallback when opened via file:// (dev convenience)
+  if (location.protocol === 'file:') resolvedEndpoint = 'http://localhost:8080/api/audit';
 }
+
+const configLoaded = loadConfig();
 
 function setStatus(text){ statusEl.textContent = text; }
 
@@ -18,6 +40,30 @@ function renderJSON(obj){
   pre.className = 'json';
   pre.textContent = JSON.stringify(obj, null, 2);
   return pre;
+}
+
+function renderError(err){
+  reportEl.innerHTML = '';
+  const c = document.createElement('div'); c.className = 'card error-card';
+  const title = document.createElement('strong'); title.textContent = (err.error || 'Error') + ' — ' + (err.statusCode || '');
+  c.appendChild(title);
+
+  const rows = [
+    ['Message', err.message || ''],
+    ['Path', err.path || ''],
+    ['Timestamp', err.timestamp || '']
+  ];
+  rows.forEach(([k,v]) => {
+    const row = document.createElement('div'); row.className = 'kv';
+    const key = document.createElement('div'); key.className = 'k'; key.textContent = k;
+    const val = document.createElement('div'); val.className = 'v'; val.textContent = v;
+    row.appendChild(key); row.appendChild(val);
+    c.appendChild(row);
+  });
+
+  reportEl.appendChild(c);
+  // also show raw JSON
+  reportEl.appendChild(renderJSON(err));
 }
 
 function renderReport(data){
@@ -112,6 +158,7 @@ async function tryFetch(endpoint, q){
 
 form.addEventListener('submit', async (ev) =>{
   ev.preventDefault();
+  await configLoaded; // ensure config resolved before using it
   const endpoint = resolvedEndpoint;
   const q = queryInput.value.trim();
   if (!q) return;
@@ -147,7 +194,13 @@ form.addEventListener('submit', async (ev) =>{
     }
   }catch(err){
     setStatus('Fetch error: ' + err.message);
-    reportEl.innerHTML = '<p style="color:#b91c1c">'+(err.message||'Unknown error')+'</p>';
+    renderError({
+      timestamp: new Date().toISOString(),
+      statusCode: 0,
+      error: 'NETWORK_ERROR',
+      message: err.message || 'Failed to fetch',
+      path: endpoint
+    });
   }
 });
 
