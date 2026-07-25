@@ -4,12 +4,18 @@ const statusEl = document.getElementById('status');
 const reportEl = document.getElementById('report');
 const clearBtn = document.getElementById('clearBtn');
 
-// Fixed backend endpoint (no UI field). Load runtime config from ./config.json with fallback to example and localhost.
+// Fixed backend endpoint (no UI field). Load runtime config from ./config.json with sensible fallbacks.
+const PRODUCTION_BACKEND = 'https://page-pulse-0dq4.onrender.com/api/audit';
 const DEFAULT_ENDPOINT = '/api/audit';
 let resolvedEndpoint = DEFAULT_ENDPOINT;
 
+function isLocalDevHost(){
+  const host = location.hostname;
+  return location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1';
+}
+
 async function loadConfig(){
-  // try runtime config first (frontend/config.json - should be created in deployment if needed)
+  
   try{
     const r = await fetch('config.json', {cache: 'no-store'});
     if (r.ok){
@@ -18,17 +24,19 @@ async function loadConfig(){
     }
   }catch(e){ /* ignore */ }
 
-  // fallback to shipped example
-  try{
-    const r2 = await fetch('config.example.json', {cache: 'no-store'});
-    if (r2.ok){
-      const cfg2 = await r2.json();
-      if (cfg2 && cfg2.backendUrl) { resolvedEndpoint = cfg2.backendUrl; return; }
-    }
-  }catch(e){ /* ignore */ }
+  if (isLocalDevHost()){
+    try{
+      const r2 = await fetch('config.example.json', {cache: 'no-store'});
+      if (r2.ok){
+        const cfg2 = await r2.json();
+        if (cfg2 && cfg2.backendUrl) { resolvedEndpoint = cfg2.backendUrl; return; }
+      }
+    }catch(e){ /* ignore */ }
+    if (location.protocol === 'file:') resolvedEndpoint = PRODUCTION_BACKEND;
+    return;
+  }
 
-  // final fallback when opened via file:// (dev convenience)
-  if (location.protocol === 'file:') resolvedEndpoint = 'http://localhost:8080/api/audit';
+  resolvedEndpoint = PRODUCTION_BACKEND;
 }
 
 const configLoaded = loadConfig();
@@ -62,7 +70,7 @@ function renderError(err){
   });
 
   reportEl.appendChild(c);
-  // also show raw JSON
+  
   reportEl.appendChild(renderJSON(err));
 }
 
@@ -70,9 +78,7 @@ function renderReport(data){
   reportEl.innerHTML = '';
   if (!data) return;
 
-  // If data has recognizable fields, render nicely
-  if (data.title || data.summary || data.items || data.pageTitle){
-    // Support AuditResponse shape
+  if (data.title || data.summary || data.items || data.pageTitle) {
     if (data.pageTitle || data.pageTitle === ""){
       const container = document.createElement('div');
       container.className = 'card';
@@ -96,7 +102,6 @@ function renderReport(data){
       });
       reportEl.appendChild(container);
 
-      // show raw JSON as fallback
       reportEl.appendChild(renderJSON(data));
       return;
     }
@@ -116,20 +121,17 @@ function renderReport(data){
       });
     }
 
-    // fall back to showing raw JSON for remaining keys
     const leftover = Object.assign({}, data);
     delete leftover.title; delete leftover.summary; delete leftover.items;
     if (Object.keys(leftover).length) reportEl.appendChild(renderJSON(leftover));
     return;
   }
 
-  // otherwise show whole JSON
   if (typeof data === 'object'){
     reportEl.appendChild(renderJSON(data));
     return;
   }
 
-  // text response
   const p = document.createElement('p'); p.textContent = String(data); reportEl.appendChild(p);
 }
 
@@ -143,7 +145,6 @@ async function tryFetch(endpoint, q){
     });
 
     if (res.status === 404 || res.status === 405){
-      // try GET fallback
       setStatus('POST not supported, trying GET...');
       const getRes = await fetch(endpoint + '?url=' + encodeURIComponent(q));
       return getRes;
@@ -151,7 +152,6 @@ async function tryFetch(endpoint, q){
 
     return res;
   }catch(err){
-    // network or CORS error — bubble up
     throw err;
   }
 }
@@ -208,13 +208,3 @@ clearBtn.addEventListener('click', ()=>{ queryInput.value=''; reportEl.innerHTML
 
 // quick UX: allow Enter in query input to submit
 queryInput.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') form.dispatchEvent(new Event('submit')) });
-
-// Footer live URL helper — call window.setLiveUrl('https://your-live-url') after deployment
-const _liveLink = document.getElementById('liveUrl');
-function setLiveUrl(url){
-  if (!_liveLink) return;
-  if (!url){ _liveLink.textContent = 'Not deployed'; _liveLink.removeAttribute('href'); return; }
-  _liveLink.textContent = url;
-  _liveLink.href = url;
-}
-window.setLiveUrl = setLiveUrl;
